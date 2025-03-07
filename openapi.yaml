@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: User Data API
+  description: API for accessing user-specific payment reports and analytics in KongPaymo
+  version: 1.0.0
+servers:
+  - url: https://api.kongpaymo.com/v1
+paths:
+  /reports/simple:
+    get:
+      summary: Get a simple user payment report
+      operationId: getSimpleReport
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Simple user report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReportResponse'
+        '400':
+          description: Missing or invalid user header
+        '404':
+          description: User not found
+  /reports/transactions:
+    get:
+      summary: Get transaction history for the authenticated user
+      operationId: getUserTransactions
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["sent", "received"]
+      responses:
+        '200':
+          description: Transaction history retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Missing or invalid user header
+        '404':
+          description: User not found
+components:
+  schemas:
+    UserReportResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        totalPaymentsSent:
+          type: number
+          format: float
+        totalPaymentsReceived:
+          type: number
+          format: float
+        averageTransactionAmount:
+          type: number
+          format: float
+        largestTransactionAmount:
+          type: number
+          format: float
+        transactionCount:
+          type: integer
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        senderId:
+          type: string
+        recipientId:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        status:
+          type: string
+          enum: ["completed", "failed", "pending"]
+        createdAt:
+          type: string
+          format: date-time
